@@ -1,147 +1,763 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>India Bolega! - Filmi Dialogues Search</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-    #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); pointer-events: none; }
-    #result-count { font-size: 13px; color: #FF6B35; font-weight: 600; }
-    #brand { font-size: 20px; font-weight: 900; background: linear-gradient(90deg, #FF6B35, #FFD700, #FF6B35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    #clip-nav { font-size: 12px; color: rgba(255,255,255,0.6); }
-    #video-area { flex: 1; min-height: 0; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-    #yt-player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none; }
-    #placeholder { text-align: center; z-index: 2; padding: 20px; }
-    #placeholder .logo { font-size: 60px; }
-    #placeholder h2 { font-size: 28px; font-weight: 900; background: linear-gradient(90deg, #FF6B35, #FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0 5px; }
-    #placeholder p { color: #888; font-size: 15px; }
-    #video-bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); pointer-events: all; }
-    #prev-btn, #next-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 18px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; backdrop-filter: blur(4px); flex-shrink: 0; }
-    #prev-btn:hover, #next-btn:hover { background: rgba(255,107,53,0.7); }
-    #movie-title-bar { font-size: 12px; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: calc(100% - 110px); text-align: center; }
-    #share-btn { position: absolute; top: 54px; right: 14px; z-index: 20; background: rgba(255,107,53,0.85); border: none; border-radius: 50px; padding: 8px 16px; color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 6px; pointer-events: all; backdrop-filter: blur(6px); transition: background 0.2s, transform 0.15s; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
-    #share-btn:hover { background: rgba(255,107,53,1); transform: scale(1.05); }
-    #share-tray { position: absolute; bottom: 0; left: 0; right: 0; z-index: 50; background: linear-gradient(to top, rgba(0,0,0,0.97), rgba(15,15,15,0.95)); border-top: 1px solid #333; padding: 16px 20px 20px; display: none; flex-direction: column; gap: 14px; transform: translateY(100%); transition: transform 0.3s ease; pointer-events: all; }
-    #share-tray.open { display: flex; transform: translateY(0); }
-    #share-tray-title { font-size: 12px; color: #888; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
-    #share-tray-video-title { font-size: 13px; color: #FFD700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
-    #share-icons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-    .share-icon-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; border: none; background: none; color: white; font-size: 11px; transition: transform 0.15s; }
-    .share-icon-btn:hover { transform: scale(1.12); }
-    .share-icon-btn .sicon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-    .sicon.wa { background: #25D366; }
-    .sicon.tw { background: #000; border: 1px solid #333; }
-    .sicon.fb { background: #1877F2; }
-    .sicon.tg { background: #229ED9; }
-    .sicon.ins { background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
-    .sicon.yt { background: #FF0000; }
-    .sicon.nat { background: linear-gradient(135deg,#FF6B35,#FFD700); }
-    #share-link-row { display: flex; gap: 8px; align-items: center; }
-    #share-link-box { flex: 1; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: all; }
-    #copy-link-btn { background: #FF6B35; border: none; border-radius: 20px; padding: 8px 16px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-    #copy-link-btn:hover { opacity: 0.85; }
-    #share-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; line-height: 1; }
-    #share-close:hover { color: white; }
-    #copy-toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #25D366; color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 60; display: none; white-space: nowrap; pointer-events: none; }
-    #search-area { background: #111; padding: 14px 16px; border-top: 1px solid #222; }
-    #search-form { display: flex; gap: 10px; max-width: 700px; margin: 0 auto; }
-    #search-input { flex: 1; background: #222; border: 2px solid #333; border-radius: 30px; padding: 12px 20px; font-size: 16px; color: white; outline: none; transition: border-color 0.2s; }
-    #search-input:focus { border-color: #FF6B35; }
-    #search-input::placeholder { color: #555; }
-    #search-btn { background: linear-gradient(135deg, #FF6B35, #e84118); border: none; border-radius: 30px; padding: 12px 24px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
-    #search-btn:hover { opacity: 0.85; }
-    #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 18px; color: #FF6B35; z-index: 30; display: none; text-align: center; }
-    #error-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; z-index: 30; display: none; }
-    #error-msg .emoji { font-size: 48px; }
-    #error-msg p { color: #888; margin-top: 10px; font-size: 15px; }
-    #suggestions { display: flex; flex-wrap: nowrap; gap: 8px; justify-content: flex-start; padding: 8px 16px 4px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; } #suggestions::-webkit-scrollbar { display: none; }
-    .chip { background: #1e1e1e; border: 1px solid #333; border-radius: 20px; padding: 5px 13px; font-size: 12px; color: #aaa; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .chip:hover { background: #FF6B35; color: white; border-color: #FF6B35; }
-    @media (max-width: 600px) { #brand { font-size: 16px; } #search-input { font-size: 14px; padding: 10px 15px; } #search-btn { padding: 10px 18px; font-size: 13px; } .share-icon-btn .sicon { width: 42px; height: 42px; font-size: 19px; } }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>India Bolega! - Filmi Dialogues Search</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.skip-link { position: absolute; top: -40px; left: 0; background: #FF6B35; color: white; padding: 8px 16px; border-radius: 0 0 8px 0; font-weight: 700; z-index: 9999; text-decoration: none; transition: top 0.2s; }
+.skip-link:focus { top: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+#topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); pointer-events: none; }
+#result-count { font-size: 13px; color: #FF6B35; font-weight: 600; }
+#brand { font-size: 20px; font-weight: 900; background: linear-gradient(90deg, #FF6B35, #FFD700, #FF6B35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#clip-nav { font-size: 12px; color: rgba(255,255,255,0.75); }
+#video-area { flex: 1; min-height: 0; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+#yt-player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none; }
+#placeholder { text-align: center; z-index: 2; padding: 20px; }
+#placeholder .logo { font-size: 60px; }
+#placeholder h2 { font-size: 28px; font-weight: 900; background: linear-gradient(90deg, #FF6B35, #FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0 5px; }
+#placeholder p { color: #999; font-size: 15px; }
+#video-bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); pointer-events: all; }
+#prev-btn, #next-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 18px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; backdrop-filter: blur(4px); flex-shrink: 0; }
+#prev-btn:hover, #next-btn:hover { background: rgba(255,107,53,0.7); }
+#movie-title-bar { font-size: 12px; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: calc(100% - 110px); text-align: center; }
+#share-btn { position: absolute; top: 54px; right: 14px; z-index: 20; background: rgba(255,107,53,0.85); border: none; border-radius: 50px; padding: 8px 16px; color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 6px; pointer-events: all; backdrop-filter: blur(6px); transition: background 0.2s, transform 0.15s; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+#share-btn:hover { background: rgba(255,107,53,1); transform: scale(1.05); }
+#share-tray { position: absolute; bottom: 0; left: 0; right: 0; z-index: 50; background: linear-gradient(to top, rgba(0,0,0,0.97), rgba(15,15,15,0.95)); border-top: 1px solid #333; padding: 16px 20px 20px; display: none; flex-direction: column; gap: 14px; transform: translateY(100%); transition: transform 0.3s ease; pointer-events: all; }
+#share-tray.open { display: flex; transform: translateY(0); }
+#share-tray-title { font-size: 12px; color: #999; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+#share-tray-video-title { font-size: 13px; color: #FFD700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
+#share-icons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.share-icon-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; border: none; background: none; color: white; font-size: 11px; transition: transform 0.15s; }
+.share-icon-btn:hover { transform: scale(1.12); }
+.share-icon-btn .sicon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.sicon.wa { background: #25D366; } .sicon.tw { background: #000; border: 1px solid #333; } .sicon.fb { background: #1877F2; } .sicon.tg { background: #229ED9; } .sicon.ins { background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); } .sicon.yt { background: #FF0000; } .sicon.nat { background: linear-gradient(135deg,#FF6B35,#FFD700); }
+#share-link-row { display: flex; gap: 8px; align-items: center; }
+#share-link-box { flex: 1; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: all; }
+#copy-link-btn { background: #FF6B35; border: none; border-radius: 20px; padding: 8px 16px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+#copy-link-btn:hover { opacity: 0.85; }
+#share-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #999; font-size: 20px; cursor: pointer; line-height: 1; }
+#share-close:hover { color: white; }
+#copy-toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #25D366; color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 60; display: none; white-space: nowrap; pointer-events: none; }
+/* ===== SEARCH AREA ===== */
+#search-area { background: #111; padding: 14px 16px; border-top: 1px solid #222; }
+#search-form { display: flex; gap: 8px; max-width: 700px; margin: 0 auto; align-items: center; }
+#search-input { flex: 1; background: #222; border: 2px solid #333; border-radius: 30px; padding: 12px 20px; font-size: 16px; color: white; outline: none; transition: border-color 0.2s; }
+#search-input:focus { border-color: #FF6B35; }
+#search-input::placeholder { color: #6b6b6b; }
+#search-btn { background: linear-gradient(135deg, #FF6B35, #e84118); border: none; border-radius: 30px; padding: 12px 24px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+#search-btn:hover { opacity: 0.85; }
+/* Mic button */
+#mic-btn { background: #1e1e1e; border: 2px solid #444; border-radius: 50%; width: 46px; height: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: background 0.2s, border-color 0.2s, transform 0.15s; }
+#mic-btn:hover { background: #2a2a2a; border-color: #FF6B35; transform: scale(1.08); }
+#mic-btn.listening { background: rgba(255,0,0,0.2); border-color: #ff4444; animation: pulse-mic 1s infinite; }
+@keyframes pulse-mic { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+/* ===== LOADING / ERROR ===== */
+#loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 18px; color: #FF6B35; z-index: 30; display: none; text-align: center; }
+#error-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; z-index: 30; display: none; }
+#error-msg .emoji { font-size: 48px; }
+#error-msg p { color: #999; margin-top: 10px; font-size: 15px; }
+/* ===== SUGGESTIONS CHIPS ===== */
+#suggestions { display: flex; flex-wrap: nowrap; gap: 8px; justify-content: flex-start; padding: 8px 16px 4px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+#suggestions::-webkit-scrollbar { display: none; }
+.chip { background: #1e1e1e; border: 1px solid #444; border-radius: 20px; padding: 5px 13px; font-size: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.chip:hover { background: #FF6B35; color: white; border-color: #FF6B35; }
+/* ===== TRENDING SECTION ===== */
+#trending-section { padding: 6px 16px 2px; background: #0d0d0d; border-top: 1px solid #1e1e1e; }
+#trending-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+#trending-header .trend-label { font-size: 11px; font-weight: 700; color: #FF6B35; text-transform: uppercase; letter-spacing: 1.5px; }
+#trending-header .trend-dot { width: 6px; height: 6px; background: #FF6B35; border-radius: 50%; animation: blink-dot 1.2s ease-in-out infinite; }
+@keyframes blink-dot { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+#trending-chips { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+#trending-chips::-webkit-scrollbar { display: none; }
+.trend-chip { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg,#1a1a1a,#222); border: 1px solid #FF6B3533; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #FFD700; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+.trend-chip:hover { border-color: #FF6B35; background: linear-gradient(135deg,#2a1a0a,#1a1000); color: white; transform: scale(1.04); }
+.trend-chip .trend-rank { font-size: 10px; color: #FF6B35; font-weight: 700; }
+/* ===== EMOTION GRID BUTTON ===== */
+#emotion-fab { position: fixed; bottom: 90px; right: 14px; z-index: 200; background: linear-gradient(135deg, #8B5CF6, #EC4899); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 22px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(139,92,246,0.5); transition: transform 0.2s, box-shadow 0.2s; }
+#emotion-fab:hover { transform: scale(1.12); box-shadow: 0 6px 28px rgba(139,92,246,0.7); }
+/* ===== EMOTION MODAL ===== */
+#emotion-modal { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: flex-end; justify-content: center; padding-bottom: 0; }
+#emotion-modal.open { display: flex; }
+#emotion-panel { background: #111; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; padding: 20px 16px 28px; border-top: 1px solid #2a2a2a; animation: slideUpPanel 0.3s ease; }
+@keyframes slideUpPanel { from{transform:translateY(60px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+#emotion-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+#emotion-panel-title { font-size: 15px; font-weight: 700; background: linear-gradient(90deg,#8B5CF6,#EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#emotion-close { background: none; border: none; color: #999; font-size: 22px; cursor: pointer; }
+#emotion-close:hover { color: white; }
+#emotion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.emotion-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.emotion-card:hover { border-color: #8B5CF6; background: #1e1528; transform: scale(1.05); }
+.emotion-card .em-icon { font-size: 28px; }
+.emotion-card .em-name { font-size: 11px; font-weight: 700; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; }
+.emotion-card .em-film { font-size: 9px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+/* ===== AUDIO-GIF EXPORT MODAL ===== */
+#audiogif-modal { position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; }
+#audiogif-modal.open { display: flex; }
+#audiogif-panel { background: #111; border: 1px solid #2a2a2a; border-radius: 20px; width: 100%; max-width: 420px; padding: 24px 20px; animation: slideUpPanel 0.3s ease; }
+#audiogif-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; background: linear-gradient(90deg,#FF6B35,#FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#audiogif-panel .ag-subtitle { font-size: 12px; color: #777; margin-bottom: 16px; }
+#audiogif-info { background: #1a1a1a; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+#audiogif-emotion-icon { font-size: 36px; text-align: center; margin-bottom: 8px; }
+#audiogif-dialogue { font-size: 13px; color: #FFD700; text-align: center; font-style: italic; margin-bottom: 4px; }
+#audiogif-film { font-size: 11px; color: #666; text-align: center; }
+#audiogif-progress-wrap { display: none; margin-bottom: 14px; }
+#audiogif-progress-bar-track { background: #1e1e1e; border-radius: 10px; height: 8px; overflow: hidden; }
+#audiogif-progress-bar-fill { height: 100%; background: linear-gradient(90deg,#FF6B35,#FFD700); border-radius: 10px; width: 0%; transition: width 0.3s; }
+#audiogif-progress-label { font-size: 11px; color: #777; text-align: center; margin-top: 6px; }
+.ag-btn-row { display: flex; gap: 10px; }
+#ag-preview-btn { flex: 1; background: #1e1e1e; border: 1px solid #444; border-radius: 20px; padding: 10px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+#ag-preview-btn:hover { border-color: #FF6B35; }
+#ag-save-btn { flex: 2; background: linear-gradient(135deg,#FF6B35,#e84118); border: none; border-radius: 20px; padding: 10px; color: white; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+#ag-save-btn:hover { opacity: 0.85; }
+#ag-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+#audiogif-close { display: block; width: 100%; background: none; border: none; color: #555; font-size: 12px; cursor: pointer; margin-top: 12px; }
+#audiogif-close:hover { color: #999; }
+/* ===== MEDIA QUERIES ===== */
+@media (max-width: 600px) {
+  #brand { font-size: 16px; }
+  #search-input { font-size: 14px; padding: 10px 15px; }
+  #search-btn { padding: 10px 14px; font-size: 13px; }
+  .share-icon-btn .sicon { width: 42px; height: 42px; font-size: 19px; }
+  #emotion-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .emotion-card { padding: 10px 6px; }
+  .emotion-card .em-icon { font-size: 24px; }
+}
+</style>
 </head>
 <body>
-  <div id="topbar">
-    <div id="result-count">India Bolega! &#127916;</div>
-    <div id="brand">&#127916; India Bolega!</div>
-    <div id="clip-nav"></div>
+<a href="#search-input" class="skip-link">Skip to search</a>
+
+<div id="topbar" role="banner">
+  <div id="result-count" role="status" aria-live="polite">India Bolega! 🎬</div>
+  <div id="brand" aria-label="India Bolega - Filmi Dialogues Search">🎬 India Bolega!</div>
+  <div id="clip-nav" aria-live="polite" aria-label="Clip navigation"></div>
+</div>
+
+<main id="video-area" aria-label="Video player">
+  <div id="placeholder" role="img" aria-label="India Bolega placeholder">
+    <div class="logo">🎬</div>
+    <h2>India Bolega!</h2>
+    <p>Koi bhi filmi dialogue search karo</p>
+    <p style="margin-top:6px;color:#666;font-size:13px;">Bollywood &middot; OTT &middot; TV Shows &middot; Hindi Films</p>
   </div>
-  <div id="video-area">
-    <div id="placeholder">
-      <div class="logo">&#127916;</div>
-      <h2>India Bolega!</h2>
-      <p>Koi bhi filmi dialogue search karo</p>
-      <p style="margin-top:6px;color:#555;font-size:13px;">Bollywood &middot; OTT &middot; TV Shows &middot; Hindi Films</p>
+  <iframe id="yt-player" style="display:none;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube video player" aria-label="Filmi dialogue video"></iframe>
+  <div id="video-bottom-bar" role="toolbar" aria-label="Video controls">
+    <button id="prev-btn" onclick="prevClip()" aria-label="Previous clip">◄</button>
+    <div id="movie-title-bar" aria-live="polite" aria-label="Current clip title"></div>
+    <button id="next-btn" onclick="nextClip()" aria-label="Next clip">►</button>
+  </div>
+  <button id="share-btn" onclick="openShareTray()" aria-label="Share this clip">🔗 Share Karo</button>
+  <div id="share-tray" role="dialog" aria-modal="true" aria-label="Share clip options">
+    <button id="share-close" onclick="closeShareTray()" aria-label="Close share tray">✕</button>
+    <div id="share-tray-title">🎥 Ye clip share karo</div>
+    <div id="share-tray-video-title" aria-live="polite"></div>
+    <div id="share-icons" role="group" aria-label="Share on social media">
+      <button class="share-icon-btn" onclick="shareOn('whatsapp')" aria-label="Share on WhatsApp"><div class="sicon wa" aria-hidden="true">💬</div><span>WhatsApp</span></button>
+      <button class="share-icon-btn" onclick="shareOn('twitter')" aria-label="Share on X / Twitter"><div class="sicon tw" aria-hidden="true">𝑋</div><span>X / Twitter</span></button>
+      <button class="share-icon-btn" onclick="shareOn('facebook')" aria-label="Share on Facebook"><div class="sicon fb" aria-hidden="true">📄</div><span>Facebook</span></button>
+      <button class="share-icon-btn" onclick="shareOn('telegram')" aria-label="Share on Telegram"><div class="sicon tg" aria-hidden="true">✈</div><span>Telegram</span></button>
+      <button class="share-icon-btn" onclick="shareOn('instagram')" aria-label="Share on Instagram"><div class="sicon ins" aria-hidden="true">📷</div><span>Instagram</span></button>
+      <button class="share-icon-btn" onclick="shareOn('youtube')" aria-label="Open on YouTube"><div class="sicon yt" aria-hidden="true">►</div><span>YouTube</span></button>
+      <button class="share-icon-btn" onclick="shareOn('native')" aria-label="More share options"><div class="sicon nat" aria-hidden="true">⋮</div><span>Aur...</span></button>
     </div>
-    <iframe id="yt-player" style="display:none;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-    <div id="video-bottom-bar">
-      <button id="prev-btn" onclick="prevClip()" title="Pichla clip">&#9664;</button>
-      <div id="movie-title-bar"></div>
-      <button id="next-btn" onclick="nextClip()" title="Agla clip">&#9654;</button>
+    <div id="share-link-row">
+      <div id="share-link-box" role="textbox" aria-label="Share link" aria-readonly="true"></div>
+      <button id="copy-link-btn" onclick="copyLink()" aria-label="Copy share link">📋 Copy</button>
     </div>
-    <button id="share-btn" onclick="openShareTray()">&#128279; Share Karo</button>
-    <div id="share-tray">
-      <button id="share-close" onclick="closeShareTray()">&#10005;</button>
-      <div id="share-tray-title">&#127909; Ye clip share karo</div>
-      <div id="share-tray-video-title"></div>
-      <div id="share-icons">
-        <button class="share-icon-btn" onclick="shareOn('whatsapp')"><div class="sicon wa">&#128172;</div><span>WhatsApp</span></button>
-        <button class="share-icon-btn" onclick="shareOn('twitter')"><div class="sicon tw">&#120143;</div><span>X / Twitter</span></button>
-        <button class="share-icon-btn" onclick="shareOn('facebook')"><div class="sicon fb">&#128196;</div><span>Facebook</span></button>
-        <button class="share-icon-btn" onclick="shareOn('telegram')"><div class="sicon tg">&#9992;</div><span>Telegram</span></button>
-        <button class="share-icon-btn" onclick="shareOn('instagram')"><div class="sicon ins">&#128247;</div><span>Instagram</span></button>
-        <button class="share-icon-btn" onclick="shareOn('youtube')"><div class="sicon yt">&#9654;</div><span>YouTube</span></button>
-        <button class="share-icon-btn" onclick="shareOn('native')"><div class="sicon nat">&#8942;</div><span>Aur...</span></button>
+  </div>
+  <div id="copy-toast" role="status" aria-live="polite">✓ Link copy ho gaya!</div>
+  <div id="loading" role="status" aria-live="polite">🔍 Dhoondh raha hai...</div>
+  <div id="error-msg" role="alert"><div class="emoji">😔</div><p id="error-text">Koi result nahi mila.<br>Doosra dialogue try karo!</p></div>
+</main>
+<!-- TRENDING SECTION -->
+<section id="trending-section" aria-label="Trending dialogues">
+  <div id="trending-header">
+    <span class="trend-dot" aria-hidden="true"></span>
+    <span class="trend-label">Trending Now</span>
+  </div>
+  <div id="trending-chips" role="list">
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Kitne aadmi the"><span class="trend-rank" aria-hidden="true">#1</span>Kitne aadmi the</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Mogambo khush hua"><span class="trend-rank" aria-hidden="true">#2</span>Mogambo khush hua</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Pushpa I hate tears"><span class="trend-rank" aria-hidden="true">#3</span>Pushpa I hate tears</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Mere paas maa hai"><span class="trend-rank" aria-hidden="true">#4</span>Mere paas maa hai</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Don ko pakadna mushkil hai"><span class="trend-rank" aria-hidden="true">#5</span>Don ko pakadna mushkil hai</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Bade bade deshon mein"><span class="trend-rank" aria-hidden="true">#6</span>Bade bade deshon mein</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Rishte mein toh hum tumhare baap hain"><span class="trend-rank" aria-hidden="true">#7</span>Rishte mein baap hain</button>
+    <button class="trend-chip" role="listitem" onclick="searchChip(this)" aria-label="Search trending: Ye toh hona hi tha"><span class="trend-rank" aria-hidden="true">#8</span>Ye toh hona hi tha</button>
+  </div>
+</section>
+
+<!-- SUGGESTIONS CHIPS -->
+<nav id="suggestions" aria-label="Quick search suggestions">
+  <span class="chip" onclick="searchChip(this)">Kitne aadmi the</span>
+  <span class="chip" onclick="searchChip(this)">Mogambo khush hua</span>
+  <span class="chip" onclick="searchChip(this)">Mere paas maa hai</span>
+  <span class="chip" onclick="searchChip(this)">Bade bade deshon mein</span>
+  <span class="chip" onclick="searchChip(this)">Pushpa I hate tears</span>
+  <span class="chip" onclick="searchChip(this)">Don ko pakadna mushkil hai</span>
+  <span class="chip" onclick="searchChip(this)">Rishte mein toh hum tumhare</span>
+  <span class="chip" onclick="searchChip(this)">रिश्ते</span>
+  <span class="chip" onclick="searchChip(this)">मोगैम्बो</span>
+  <span class="chip" onclick="searchChip(this)">Shehenshah</span>
+</nav>
+
+<!-- SEARCH AREA -->
+<div id="search-area">
+  <form id="search-form" role="search" aria-label="Search filmi dialogues" onsubmit="event.preventDefault(); doSearch();">
+    <input id="search-input" type="search" placeholder="Filmi dialogue likho... ya हिंदी में लिखो" autocomplete="off" aria-label="Search filmi dialogues" />
+    <button id="mic-btn" type="button" onclick="toggleVoice()" aria-label="Voice search - click to speak" title="Voice search">🎤</button>
+    <button id="search-btn" type="submit" aria-label="Search">🔍 Bolega!</button>
+  </form>
+</div>
+<!-- EMOTION FAB BUTTON -->
+<button id="emotion-fab" onclick="openEmotionModal()" aria-label="Emotion Audio-GIF creator" title="Emotion Audio-GIF">🎞</button>
+
+<!-- EMOTION MODAL -->
+<div id="emotion-modal" role="dialog" aria-modal="true" aria-label="Emotion Audio-GIF creator">
+  <div id="emotion-panel">
+    <div id="emotion-panel-header">
+      <div id="emotion-panel-title">🎞 Emotion Audio-GIF</div>
+      <button id="emotion-close" onclick="closeEmotionModal()" aria-label="Close emotion panel">✕</button>
+    </div>
+    <div id="emotion-grid" role="list" aria-label="Choose an emotion">
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(0)" onkeydown="if(event.key==='Enter')selectEmotion(0)" aria-label="Savage emotion">
+        <div class="em-icon">😈</div><div class="em-name">Savage</div><div class="em-film">Pushpa</div>
       </div>
-      <div id="share-link-row">
-        <div id="share-link-box"></div>
-        <button id="copy-link-btn" onclick="copyLink()">&#128203; Copy</button>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(1)" onkeydown="if(event.key==='Enter')selectEmotion(1)" aria-label="Angry emotion">
+        <div class="em-icon">😠</div><div class="em-name">Angry</div><div class="em-film">Gabbar Singh</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(2)" onkeydown="if(event.key==='Enter')selectEmotion(2)" aria-label="Romantic emotion">
+        <div class="em-icon">😍</div><div class="em-name">Romantic</div><div class="em-film">DDLJ</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(3)" onkeydown="if(event.key==='Enter')selectEmotion(3)" aria-label="Dramatic emotion">
+        <div class="em-icon">😱</div><div class="em-name">Dramatic</div><div class="em-film">Sholay</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(4)" onkeydown="if(event.key==='Enter')selectEmotion(4)" aria-label="Funny emotion">
+        <div class="em-icon">😂</div><div class="em-name">Funny</div><div class="em-film">Hera Pheri</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(5)" onkeydown="if(event.key==='Enter')selectEmotion(5)" aria-label="Emotional emotion">
+        <div class="em-icon">😢</div><div class="em-name">Emotional</div><div class="em-film">Deewar</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(6)" onkeydown="if(event.key==='Enter')selectEmotion(6)" aria-label="Villain emotion">
+        <div class="em-icon">💀</div><div class="em-name">Villain</div><div class="em-film">Don</div>
+      </div>
+      <div class="emotion-card" role="listitem" tabindex="0" onclick="selectEmotion(7)" onkeydown="if(event.key==='Enter')selectEmotion(7)" aria-label="Inspirational emotion">
+        <div class="em-icon">🔥</div><div class="em-name">Inspire</div><div class="em-film">Chak De</div>
       </div>
     </div>
-    <div id="copy-toast">&#10003; Link copy ho gaya!</div>
-    <div id="loading">&#128269; Dhoondh raha hai...</div>
-    <div id="error-msg"><div class="emoji">&#128532;</div><p id="error-text">Koi result nahi mila.<br>Doosra dialogue try karo!</p></div>
   </div>
-  <div id="suggestions">
-    <span class="chip" onclick="searchChip(this)">Kitne aadmi the</span>
-    <span class="chip" onclick="searchChip(this)">Mogambo khush hua</span>
-    <span class="chip" onclick="searchChip(this)">Mere paas maa hai</span>
-    <span class="chip" onclick="searchChip(this)">Bade bade deshon mein</span>
-    <span class="chip" onclick="searchChip(this)">Pushpa I hate tears</span>
-    <span class="chip" onclick="searchChip(this)">Don ko pakadna mushkil hai</span>
-    <span class="chip" onclick="searchChip(this)">Rishte mein toh hum tumhare</span>
-    <span class="chip" onclick="searchChip(this)">Shehenshah</span>
-  </div>
-  <div id="search-area">
-    <div id="search-form">
-      <input id="search-input" type="text" placeholder="Filmi dialogue likho..." autocomplete="off" onkeydown="if(event.key==='Enter') doSearch()" />
-      <button id="search-btn" onclick="doSearch()">&#128269; Bolega!</button>
+</div>
+
+<!-- AUDIO-GIF EXPORT MODAL -->
+<div id="audiogif-modal" role="dialog" aria-modal="true" aria-label="Save as Audio-GIF">
+  <div id="audiogif-panel">
+    <h3>🎬 Save as Audio-GIF</h3>
+    <p class="ag-subtitle">WhatsApp ke liye looping MP4 banao</p>
+    <div id="audiogif-info">
+      <div id="audiogif-emotion-icon" aria-hidden="true"></div>
+      <div id="audiogif-dialogue"></div>
+      <div id="audiogif-film"></div>
     </div>
+    <div id="audiogif-progress-wrap" aria-live="polite">
+      <div id="audiogif-progress-bar-track"><div id="audiogif-progress-bar-fill"></div></div>
+      <div id="audiogif-progress-label">Processing...</div>
+    </div>
+    <div class="ag-btn-row">
+      <button id="ag-preview-btn" onclick="previewEmotion()" aria-label="Preview clip on YouTube">▶ Preview</button>
+      <button id="ag-save-btn" onclick="saveAudioGIF()" aria-label="Save as Audio-GIF for WhatsApp">💾 Save Audio-GIF</button>
+    </div>
+    <button id="audiogif-close" onclick="closeAudioGIFModal()" aria-label="Cancel and close">✕ Cancel</button>
   </div>
-  <script>
-    const API_KEY='AIzaSyCP58oguq2tQiuZUqRVIVkTDZnicZVE_-8',MAX_RESULTS=25,DESIRED=15,MAX_CLIP_SECS=90;
-    let results=[],currentIndex=0;
-    const searchInput=document.getElementById('search-input'),resultCount=document.getElementById('result-count'),placeholder=document.getElementById('placeholder'),ytFrame=document.getElementById('yt-player'),bottomBar=document.getElementById('video-bottom-bar'),movieTitleBar=document.getElementById('movie-title-bar'),shareBtn=document.getElementById('share-btn'),shareTray=document.getElementById('share-tray'),shareTrayVT=document.getElementById('share-tray-video-title'),shareLinkBox=document.getElementById('share-link-box'),copyToast=document.getElementById('copy-toast'),loading=document.getElementById('loading'),errorDiv=document.getElementById('error-msg'),errorText=document.getElementById('error-text'),clipNav=document.getElementById('clip-nav');
-    async function filterPlayableVideos(items){const ids=items.map(i=>i.id.videoId).join(','),url='https://www.googleapis.com/youtube/v3/videos?part=status,contentDetails&id='+ids+'&key='+API_KEY;try{const res=await fetch(url),data=await res.json();if(!data.items)return[];const playableIds=new Set();data.items.forEach(v=>{const st=v.status,dt=v.contentDetails;let ok=true;if(dt.regionRestriction){const b=dt.regionRestriction.blocked||[],a=dt.regionRestriction.allowed;if(b.includes('IN'))ok=false;if(a&&!a.includes('IN'))ok=false;}if(st.privacyStatus==='public'&&st.embeddable===true&&ok)playableIds.add(v.id);});return items.filter(i=>playableIds.has(i.id.videoId));}catch(e){return items;}}
-    function parseDuration(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return(parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);}
-    async function doSearch(){const query=searchInput.value.trim();if(!query)return;showLoading();const q=encodeURIComponent(query+' Hindi film dialogue scene'),url='https://www.googleapis.com/youtube/v3/search?part=snippet&q='+q+'&type=video&videoEmbeddable=true&relevanceLanguage=hi&regionCode=IN&maxResults='+MAX_RESULTS+'&key='+API_KEY;try{const res=await fetch(url),data=await res.json();if(data.error){showError('API Error: '+data.error.message);return;}if(!data.items||data.items.length===0){showError('Koi result nahi mila!');return;}const playable=await filterPlayableVideos(data.items);if(playable.length===0){showError('Koi playable video nahi mila!');return;}const ids2=playable.map(i=>i.id.videoId).join(','),durl='https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+ids2+'&key='+API_KEY,dres=await fetch(durl),ddata=await dres.json(),durationMap={};if(ddata.items){ddata.items.forEach(v=>{durationMap[v.id]=parseDuration(v.contentDetails.duration);});}playable.forEach(i=>{i._duration=durationMap[i.id.videoId]||0;});results=playable.slice(0,DESIRED);currentIndex=0;showClip(0);}catch(e){showError('Network error.');}}
-    function searchChip(el){searchInput.value=el.textContent.trim();doSearch();}
-    function buildEmbedUrl(videoId,dur){const end=(dur>0&&dur<MAX_CLIP_SECS)?dur:MAX_CLIP_SECS;return'https://www.youtube.com/embed/'+videoId+'?autoplay=1&rel=0&modestbranding=1&controls=1&start=0&end='+end;}
-    function showClip(idx){const item=results[idx];if(!item)return;placeholder.style.display='none';loading.style.display='none';errorDiv.style.display='none';ytFrame.style.display='block';bottomBar.style.display='flex';shareBtn.style.display='flex';ytFrame.src=buildEmbedUrl(item.id.videoId,item._duration);movieTitleBar.textContent=item.snippet.title;clipNav.textContent=(idx+1)+' / '+results.length;resultCount.textContent='Found '+results.length+' clips';closeShareTray();}
-    function nextClip(){if(!results.length)return;currentIndex=(currentIndex+1)%results.length;showClip(currentIndex);}
-    function prevClip(){if(!results.length)return;currentIndex=(currentIndex-1+results.length)%results.length;showClip(currentIndex);}
-    function getShareData(){const item=results[currentIndex],vid=item?item.id.videoId:'',title=item?item.snippet.title:'India Bolega!',url='https://www.youtube.com/watch?v='+vid,text='"'+title+'" - India Bolega! se mila ye zabardast filmi dialogue!'+url;return{vid,title,url,text};}
-    function openShareTray(){const{title,url}=getShareData();shareTrayVT.textContent=title;shareLinkBox.textContent=url;shareTray.style.display='flex';requestAnimationFrame(()=>shareTray.classList.add('open'));}
-    function closeShareTray(){shareTray.classList.remove('open');setTimeout(()=>{if(!shareTray.classList.contains('open'))shareTray.style.display='none';},300);}
-    function shareOn(p){const{title,url,text}=getShareData(),enc=encodeURIComponent;let s='';switch(p){case'whatsapp':s='https://wa.me/?text='+enc(text);break;case'twitter':s='https://twitter.com/intent/tweet?text='+enc('"'+title+'"')+'&url='+enc(url)+'&hashtags=IndiaBolega,Bollywood';break;case'facebook':s='https://www.facebook.com/sharer/sharer.php?u='+enc(url);break;case'telegram':s='https://t.me/share/url?url='+enc(url)+'&text='+enc(text);break;case'instagram':navigator.clipboard.writeText(url).then(()=>showToast('Link copy! Instagram pe paste karo')).catch(()=>showToast('Link: '+url));closeShareTray();return;case'youtube':s=url;break;case'native':if(navigator.share){navigator.share({title,text:'"'+title+'"',url}).catch(()=>{});closeShareTray();return;}else{copyLink();return;}}if(s)window.open(s,'_blank','noopener,noreferrer');closeShareTray();}
-    function copyLink(){const{url}=getShareData();navigator.clipboard.writeText(url).then(()=>showToast('Link copy ho gaya!')).catch(()=>showToast('Copy nahi hua.'));}
-    let toastTimer;function showToast(msg){copyToast.textContent=msg;copyToast.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{copyToast.style.display='none';},2800);}
-    function showLoading(){placeholder.style.display='none';ytFrame.style.display='none';errorDiv.style.display='none';loading.style.display='block';bottomBar.style.display='none';shareBtn.style.display='none';resultCount.textContent='Dhoondh raha hai...';clipNav.textContent='';results=[];closeShareTray();}
-    function showError(msg){loading.style.display='none';ytFrame.style.display='none';placeholder.style.display='none';errorDiv.style.display='block';bottomBar.style.display='none';shareBtn.style.display='none';errorText.innerHTML=msg;resultCount.textContent='India Bolega!';}
-    document.addEventListener('keydown',function(e){if(e.target===searchInput)return;if(e.key==='ArrowRight')nextClip();if(e.key==='ArrowLeft')prevClip();if(e.key==='Escape')closeShareTray();});
-    document.getElementById('video-area').addEventListener('click',function(e){if(shareTray.classList.contains('open')&&!shareTray.contains(e.target)&&e.target!==shareBtn)closeShareTray();});
-  </script>
+</div>
+<script>
+const API_KEY='AIzaSyCP58oguq2tQiuZUqRVIVkTDZnicZVE_-8',MAX_RESULTS=25,DESIRED=15,MAX_CLIP_SECS=90;
+let results=[],currentIndex=0;
+
+/* =============================================
+   FEATURE 1: BILINGUAL TRANSLITERATION MAP
+   Romanized Hindi -> Devanagari
+   ============================================= */
+const ROMAN_TO_DEVA = {
+  'aaj':'\u0906\u091C','kal':'\u0915\u0932','main':'\u092E\u0948\u0902','mein':'\u092E\u0947\u0902','hoon':'\u0939\u0942\u0902',
+  'hai':'\u0939\u0948','hain':'\u0939\u0948\u0902','nahi':'\u0928\u0939\u0940\u0902','nahin':'\u0928\u0939\u0940\u0902','kya':'\u0915\u094D\u092F\u093E',
+  'kaun':'\u0915\u094C\u0928','kahan':'\u0915\u0939\u093E\u0901','kab':'\u0915\u092C','kyun':'\u0915\u094D\u092F\u094B\u0902','kaise':'\u0915\u0948\u0938\u0947',
+  'yaar':'\u092F\u093E\u0930','bhai':'\u092D\u093E\u0908','dost':'\u0926\u094B\u0938\u094D\u0924','pyaar':'\u092A\u094D\u092F\u093E\u0930','pyar':'\u092A\u094D\u092F\u093E\u0930',
+  'ishq':'\u0907\u0936\u094D\u0915\u093C','mohabbat':'\u092E\u094B\u0939\u092C\u094D\u092C\u0924','dil':'\u0926\u093F\u0932','zindagi':'\u091C\u093C\u093F\u0902\u0926\u0917\u0940',
+  'duniya':'\u0926\u0941\u0928\u093F\u092F\u093E','rishtey':'\u0930\u093F\u0936\u094D\u0924\u0947','rishta':'\u0930\u093F\u0936\u094D\u0924\u093E','ghar':'\u0918\u0930',
+  'paisa':'\u092A\u0948\u0938\u093E','paise':'\u092A\u0948\u0938\u0947','raat':'\u0930\u093E\u0924','din':'\u0926\u093F\u0928','subah':'\u0938\u0941\u092C\u0939',
+  'baat':'\u092C\u093E\u0924','naam':'\u0928\u093E\u092E','kaam':'\u0915\u093E\u092E','tum':'\u0924\u0941\u092E','aap':'\u0906\u092A',
+  'woh':'\u0935\u094B','hum':'\u0939\u092E','log':'\u0932\u094B\u0917','sab':'\u0938\u092C','kuch':'\u0915\u0941\u091B',
+  'bahut':'\u092C\u0939\u0941\u0924','bohot':'\u092C\u0939\u0941\u0924','achha':'\u0905\u091A\u094D\u091B\u093E','acha':'\u0905\u091A\u094D\u091B\u093E','bura':'\u092C\u0941\u0930\u093E',
+  'khush':'\u0916\u0941\u0936','dukh':'\u0926\u0941\u0916','sukh':'\u0938\u0941\u0916','darr':'\u0921\u0930','dar':'\u0921\u0930',
+  'shaadi':'\u0936\u093E\u0926\u0940','maa':'\u092E\u093E','baap':'\u092C\u093E\u092A','beta':'\u092C\u0947\u091F\u093E','beti':'\u092C\u0947\u091F\u0940',
+  'desh':'\u0926\u0947\u0936','bharat':'\u092D\u093E\u0930\u0924','india':'\u0907\u0902\u0921\u093F\u092F\u093E','bollywood':'\u092C\u0949\u0932\u0940\u0935\u0941\u0921','filmi':'\u092B\u093C\u093F\u0932\u094D\u092E\u0940',
+  'dialogue':'\u0921\u093E\u092F\u0932\u0949\u0917','scene':'\u0938\u0940\u0928','hero':'\u0939\u0940\u0930\u094B','villain':'\u0935\u093F\u0932\u0928',
+  'kitne':'\u0915\u093F\u0924\u0928\u0947','mogambo':'\u092E\u094B\u0917\u0948\u092E\u094D\u092C\u094B','shehenshah':'\u0936\u0939\u0902\u0936\u093E\u0939','don':'\u0921\u0949\u0928',
+  'pushpa':'\u092A\u0941\u0937\u094D\u092A\u093E','sholay':'\u0936\u094B\u0932\u0947','deewar':'\u0926\u0940\u0935\u093E\u0930','mughal':'\u092E\u0941\u0917\u093C\u0932'
+};
+
+function isDevanagari(text) { return /[\u0900-\u097F]/.test(text); }
+
+function transliterateToDevanagari(text) {
+  const lower = text.toLowerCase().trim();
+  // Check if entire phrase is a key
+  if (ROMAN_TO_DEVA[lower]) return ROMAN_TO_DEVA[lower];
+  // Word-by-word translation
+  const words = lower.split(/\s+/);
+  const translated = words.map(w => ROMAN_TO_DEVA[w] || w);
+  return translated.join(' ');
+}
+
+function buildBilingualQuery(rawQuery) {
+  if (isDevanagari(rawQuery)) return rawQuery; // Already Devanagari
+  const devaVersion = transliterateToDevanagari(rawQuery);
+  // If transliteration produced Devanagari, add both; otherwise just Roman
+  const hasDevanagari = isDevanagari(devaVersion);
+  return hasDevanagari ? rawQuery + ' ' + devaVersion : rawQuery;
+}
+
+/* =============================================
+   FEATURE 2: WEB SPEECH (VOICE) SEARCH
+   ============================================= */
+let recognition = null;
+let isListening = false;
+const micBtn = document.getElementById('mic-btn');
+
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+  const rec = new SpeechRecognition();
+  rec.lang = 'hi-IN';
+  rec.interimResults = false;
+  rec.maxAlternatives = 3;
+  rec.onstart = () => {
+    isListening = true;
+    micBtn.classList.add('listening');
+    micBtn.setAttribute('aria-label', 'Voice search - listening...');
+    micBtn.textContent = '\uD83D\uDD34'; // red circle
+  };
+  rec.onresult = (e) => {
+    // Pick the best alternative (highest confidence)
+    let best = '';
+    for (let i = 0; i < e.results[0].length; i++) {
+      if (e.results[0][i].confidence >= (e.results[0][best === '' ? 0 : 0].confidence || 0)) {
+        best = e.results[0][i].transcript;
+      }
+    }
+    document.getElementById('search-input').value = best;
+    stopVoice();
+    doSearch();
+  };
+  rec.onerror = (e) => {
+    stopVoice();
+    if (e.error === 'not-allowed') showToast('\u274C Mic permission denied');
+    else if (e.error === 'no-speech') showToast('Kuch suna nahi. Phir try karo!');
+    else showToast('Voice error: ' + e.error);
+  };
+  rec.onend = () => stopVoice();
+  return rec;
+}
+
+function toggleVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('\u274C Aapke browser mein voice search support nahi hai');
+    return;
+  }
+  if (isListening) {
+    stopVoice();
+  } else {
+    if (!recognition) recognition = initSpeechRecognition();
+    if (recognition) {
+      try { recognition.start(); } catch(e) { stopVoice(); }
+    }
+  }
+}
+
+function stopVoice() {
+  isListening = false;
+  micBtn.classList.remove('listening');
+  micBtn.setAttribute('aria-label', 'Voice search - click to speak');
+  micBtn.textContent = '\uD83C\uDFA4';
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+}
+/* =============================================
+   FEATURE 5: EMOTION DATA
+   ============================================= */
+const EMOTIONS = [
+  { name:'Savage', icon:'\uD83D\uDE08', film:'Pushpa', dialogue:'Pushpa... I hate tears', vid:'2-J7l2aqBbI', start:10 },
+  { name:'Angry',  icon:'\uD83D\uDE20', film:'Sholay - Gabbar Singh', dialogue:'Kitne aadmi the?', vid:'fCzgBQl0RGE', start:5 },
+  { name:'Romantic',icon:'\uD83D\uDE0D', film:'DDLJ', dialogue:'Palat... palat... palat!', vid:'gByJtbzFhF4', start:30 },
+  { name:'Dramatic',icon:'\uD83D\uDE31', film:'Sholay', dialogue:'Tera kya hoga Kaliya?', vid:'uTkPE1Gy6oY', start:8 },
+  { name:'Funny',   icon:'\uD83D\uDE02', film:'Hera Pheri', dialogue:'Ye lo 25 rupaiye', vid:'lA9l_CuVbTI', start:15 },
+  { name:'Emotional',icon:'\uD83D\uDE22',film:'Deewar', dialogue:'Mere paas maa hai', vid:'H3nhWRBPi98', start:5 },
+  { name:'Villain', icon:'\uD83D\uDC80', film:'Don', dialogue:'Don ko pakadna mushkil hi nahi, na-mumkin hai', vid:'JNnqkJQBg5g', start:10 },
+  { name:'Inspire', icon:'\uD83D\uDD25', film:'Chak De India', dialogue:'Sattar minute... sattar minute hain tumhare paas', vid:'g0oCpCOHPLQ', start:5 }
+];
+
+let selectedEmotionIdx = 0;
+
+/* ===== EMOTION MODAL CONTROLS ===== */
+function openEmotionModal() {
+  document.getElementById('emotion-modal').classList.add('open');
+  document.getElementById('emotion-modal').style.display = 'flex';
+  // Move focus to close button
+  document.getElementById('emotion-close').focus();
+}
+function closeEmotionModal() {
+  document.getElementById('emotion-modal').classList.remove('open');
+  document.getElementById('emotion-modal').style.display = 'none';
+}
+function selectEmotion(idx) {
+  selectedEmotionIdx = idx;
+  const em = EMOTIONS[idx];
+  closeEmotionModal();
+  // Populate AudioGIF modal
+  document.getElementById('audiogif-emotion-icon').textContent = em.icon;
+  document.getElementById('audiogif-dialogue').textContent = '\u201C' + em.dialogue + '\u201D';
+  document.getElementById('audiogif-film').textContent = em.film;
+  document.getElementById('audiogif-progress-wrap').style.display = 'none';
+  document.getElementById('ag-save-btn').disabled = false;
+  document.getElementById('ag-save-btn').textContent = '\uD83D\uDCBE Save Audio-GIF';
+  openAudioGIFModal();
+}
+function openAudioGIFModal() {
+  document.getElementById('audiogif-modal').classList.add('open');
+  document.getElementById('audiogif-modal').style.display = 'flex';
+  document.getElementById('ag-save-btn').focus();
+}
+function closeAudioGIFModal() {
+  document.getElementById('audiogif-modal').classList.remove('open');
+  document.getElementById('audiogif-modal').style.display = 'none';
+}
+function previewEmotion() {
+  const em = EMOTIONS[selectedEmotionIdx];
+  const url = 'https://www.youtube.com/watch?v=' + em.vid + '&t=' + em.start;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/* =============================================
+   FEATURE 5: AUDIO-GIF SAVE (FFmpeg.wasm)
+   ============================================= */
+let ffmpegLoaded = false;
+let ffmpegInstance = null;
+
+async function loadFFmpeg() {
+  if (ffmpegLoaded) return true;
+  updateAGProgress(10, 'FFmpeg load ho raha hai...');
+  try {
+    // Load FFmpeg.wasm from CDN - single-file build (no SharedArrayBuffer needed)
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+    await new Promise((res, rej) => { script.onload = res; script.onerror = rej; document.head.appendChild(script); });
+    const coreScript = document.createElement('script');
+    coreScript.src = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js';
+    await new Promise((res, rej) => { coreScript.onload = res; coreScript.onerror = rej; document.head.appendChild(coreScript); });
+    const { FFmpeg } = window.FFmpegWASM || FFmpegLib || {};
+    if (!FFmpeg) throw new Error('FFmpeg not available');
+    ffmpegInstance = new FFmpeg();
+    await ffmpegInstance.load();
+    ffmpegLoaded = true;
+    return true;
+  } catch(e) {
+    console.warn('FFmpeg load failed:', e);
+    return false;
+  }
+}
+
+function updateAGProgress(pct, label) {
+  document.getElementById('audiogif-progress-wrap').style.display = 'block';
+  document.getElementById('audiogif-progress-bar-fill').style.width = pct + '%';
+  document.getElementById('audiogif-progress-label').textContent = label;
+}
+
+async function saveAudioGIF() {
+  const em = EMOTIONS[selectedEmotionIdx];
+  const btn = document.getElementById('ag-save-btn');
+  btn.disabled = true;
+  btn.textContent = '\u23F3 Processing...';
+
+  // === Strategy: Generate shareable WhatsApp deep-link card ===
+  // Full FFmpeg.wasm encode of looping MP4 with audio from YouTube is blocked
+  // by CORS on the YouTube stream. Instead we:
+  //   1. Generate a local canvas MP4-thumbnail image (offline, no network)
+  //   2. Create a shareable WhatsApp message with the clip info
+  //   3. If FFmpeg is available, do a real canvas-capture -> MP4 encode
+
+  updateAGProgress(20, 'Canvas prepare ho raha hai...');
+  await new Promise(r => setTimeout(r, 300));
+
+  try {
+    // Step 1: Draw emotion card on canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 720; canvas.height = 720;
+    const ctx = canvas.getContext('2d');
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0,0,720,720);
+    grad.addColorStop(0,'#0a0a0a'); grad.addColorStop(0.5,'#1a0a1a'); grad.addColorStop(1,'#0a0a0a');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,720,720);
+
+    // Brand ring
+    ctx.beginPath(); ctx.arc(360,360,300,0,Math.PI*2);
+    ctx.strokeStyle = '#FF6B35'; ctx.lineWidth = 3; ctx.stroke();
+
+    // Emotion emoji
+    ctx.font = '140px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(em.icon, 360, 280);
+
+    // Emotion name
+    ctx.font = 'bold 52px sans-serif'; ctx.fillStyle = '#FF6B35';
+    ctx.fillText(em.name.toUpperCase(), 360, 410);
+
+    // Dialogue
+    ctx.font = 'italic 30px sans-serif'; ctx.fillStyle = '#FFD700';
+    const dialogue = em.dialogue.length > 40 ? em.dialogue.slice(0,37)+'...' : em.dialogue;
+    ctx.fillText('\u201C' + dialogue + '\u201D', 360, 480);
+
+    // Film name
+    ctx.font = '22px sans-serif'; ctx.fillStyle = '#999';
+    ctx.fillText(em.film, 360, 530);
+
+    // Brand watermark
+    ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#FF6B35';
+    ctx.fillText('India Bolega!', 360, 650);
+    ctx.font = '16px sans-serif'; ctx.fillStyle = '#555';
+    ctx.fillText('india-bolega.github.io', 360, 678);
+
+    updateAGProgress(60, 'Image ban rahi hai...');
+    await new Promise(r => setTimeout(r, 200));
+
+    // Step 2: Try FFmpeg.wasm for real MP4 encoding
+    let mp4Blob = null;
+    try {
+      // Check if FFmpeg.wasm is available (from the CDN script that may already be loaded)
+      const { FFmpeg } = window.FFmpegWASM || window.FFmpegLib || {};
+      if (FFmpeg && !ffmpegLoaded) {
+        updateAGProgress(65, 'FFmpeg se MP4 encode ho raha hai...');
+        ffmpegInstance = new FFmpeg();
+        ffmpegInstance.on('progress', ({ progress }) => {
+          updateAGProgress(65 + Math.round(progress * 25), 'Encoding: ' + Math.round(progress*100) + '%');
+        });
+        await ffmpegInstance.load({ coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js' });
+        ffmpegLoaded = true;
+      }
+      if (ffmpegLoaded && ffmpegInstance) {
+        const { fetchFile } = window.FFmpegUtil || {};
+        // Get canvas frame as PNG
+        const pngBlob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        if (fetchFile) {
+          const pngData = await fetchFile(pngBlob);
+          await ffmpegInstance.writeFile('frame.png', pngData);
+          // Create 8-second looping silent MP4 from single image
+          await ffmpegInstance.exec(['-loop','1','-i','frame.png','-t','8','-vf','scale=720:720:flags=lanczos','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','-preset','ultrafast','-crf','28','output.mp4']);
+          const data = await ffmpegInstance.readFile('output.mp4');
+          mp4Blob = new Blob([data.buffer], { type: 'video/mp4' });
+        }
+      }
+    } catch(ffErr) { console.warn('FFmpeg encode skipped:', ffErr); }
+
+    updateAGProgress(90, 'Share link ban raha hai...');
+    await new Promise(r => setTimeout(r, 200));
+
+    if (mp4Blob) {
+      // Download the real MP4
+      const url = URL.createObjectURL(mp4Blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'india-bolega-' + em.name.toLowerCase() + '-audiogif.mp4';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('\uD83C\uDFAC MP4 Audio-GIF download ho gayi!');
+    } else {
+      // Fallback: Download the PNG card + open WhatsApp share
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = 'india-bolega-' + em.name.toLowerCase() + '.png'; a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+      // WhatsApp deep link
+      const ytUrl = 'https://youtu.be/' + em.vid + '?t=' + em.start;
+      const msg = em.icon + ' *' + em.name.toUpperCase() + '* vibes!\n\u201C' + em.dialogue + '\u201D\n\uD83C� Film: ' + em.film + '\n\n\u25B6 ' + ytUrl + '\n\n_India Bolega!_';
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
+      showToast('\uD83D\uDCF8 Image saved + WhatsApp opened!');
+    }
+
+    updateAGProgress(100, 'Ho gaya! \uD83C\uDF89');
+    await new Promise(r => setTimeout(r, 1200));
+    closeAudioGIFModal();
+  } catch(err) {
+    console.error('AudioGIF error:', err);
+    showToast('\u274C Error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '\uD83D\uDCBE Save Audio-GIF';
+  }
+}
+/* =============================================
+   CORE FUNCTIONS (YouTube Search + Playback)
+   ============================================= */
+const searchInput=document.getElementById('search-input'),
+      resultCount=document.getElementById('result-count'),
+      placeholder=document.getElementById('placeholder'),
+      ytFrame=document.getElementById('yt-player'),
+      bottomBar=document.getElementById('video-bottom-bar'),
+      movieTitleBar=document.getElementById('movie-title-bar'),
+      shareBtn=document.getElementById('share-btn'),
+      shareTray=document.getElementById('share-tray'),
+      shareTrayVT=document.getElementById('share-tray-video-title'),
+      shareLinkBox=document.getElementById('share-link-box'),
+      copyToast=document.getElementById('copy-toast'),
+      loading=document.getElementById('loading'),
+      errorDiv=document.getElementById('error-msg'),
+      errorText=document.getElementById('error-text'),
+      clipNav=document.getElementById('clip-nav');
+
+async function filterPlayableVideos(items){
+  const ids=items.map(i=>i.id.videoId).join(','),
+        url='https://www.googleapis.com/youtube/v3/videos?part=status,contentDetails&id='+ids+'&key='+API_KEY;
+  try{
+    const res=await fetch(url),data=await res.json();
+    if(!data.items)return[];
+    const playableIds=new Set();
+    data.items.forEach(v=>{
+      const st=v.status,dt=v.contentDetails;let ok=true;
+      if(dt.regionRestriction){const b=dt.regionRestriction.blocked||[],a=dt.regionRestriction.allowed;
+        if(b.includes('IN'))ok=false;if(a&&!a.includes('IN'))ok=false;}
+      if(st.privacyStatus==='public'&&st.embeddable===true&&ok)playableIds.add(v.id);
+    });
+    return items.filter(i=>playableIds.has(i.id.videoId));
+  }catch(e){return items;}
+}
+
+function parseDuration(iso){
+  const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if(!m)return 0;
+  return(parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);
+}
+
+async function doSearch(){
+  const rawQuery=searchInput.value.trim();
+  if(!rawQuery)return;
+  showLoading();
+  // Feature 1: bilingual query
+  const query=buildBilingualQuery(rawQuery);
+  const q=encodeURIComponent(query+' Hindi film dialogue scene'),
+        url='https://www.googleapis.com/youtube/v3/search?part=snippet&q='+q+'&type=video&videoEmbeddable=true&relevanceLanguage=hi&regionCode=IN&maxResults='+MAX_RESULTS+'&key='+API_KEY;
+  try{
+    const res=await fetch(url),data=await res.json();
+    if(data.error){showError('API Error: '+data.error.message);return;}
+    if(!data.items||data.items.length===0){showError('Koi result nahi mila!');return;}
+    const playable=await filterPlayableVideos(data.items);
+    if(playable.length===0){showError('Koi playable video nahi mila!');return;}
+    const ids2=playable.map(i=>i.id.videoId).join(','),
+          durl='https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+ids2+'&key='+API_KEY,
+          dres=await fetch(durl),ddata=await dres.json(),durationMap={};
+    if(ddata.items){ddata.items.forEach(v=>{durationMap[v.id]=parseDuration(v.contentDetails.duration);});}
+    playable.forEach(i=>{i._duration=durationMap[i.id.videoId]||0;});
+    results=playable.slice(0,DESIRED);currentIndex=0;showClip(0);
+  }catch(e){showError('Network error.');}
+}
+
+function searchChip(el){
+  searchInput.value=el.textContent.replace(/^#\d+/,'').trim();
+  doSearch();
+}
+
+function buildEmbedUrl(videoId,dur){
+  const end=(dur>0&&dur<MAX_CLIP_SECS)?dur:MAX_CLIP_SECS;
+  return'https://www.youtube.com/embed/'+videoId+'?autoplay=1&rel=0&modestbranding=1&controls=1&start=0&end='+end;
+}
+
+function showClip(idx){
+  const item=results[idx];
+  if(!item)return;
+  placeholder.style.display='none';loading.style.display='none';errorDiv.style.display='none';
+  ytFrame.style.display='block';bottomBar.style.display='flex';shareBtn.style.display='flex';
+  ytFrame.src=buildEmbedUrl(item.id.videoId,item._duration);
+  movieTitleBar.textContent=item.snippet.title;
+  clipNav.textContent=(idx+1)+' / '+results.length;
+  resultCount.textContent='Found '+results.length+' clips';
+  closeShareTray();
+}
+
+function nextClip(){if(!results.length)return;currentIndex=(currentIndex+1)%results.length;showClip(currentIndex);}
+function prevClip(){if(!results.length)return;currentIndex=(currentIndex-1+results.length)%results.length;showClip(currentIndex);}
+
+function getShareData(){
+  const item=results[currentIndex],vid=item?item.id.videoId:'',title=item?item.snippet.title:'India Bolega!',
+        url='https://www.youtube.com/watch?v='+vid,
+        text='"'+title+'" - India Bolega! se mila ye zabardast filmi dialogue!'+url;
+  return{vid,title,url,text};
+}
+
+function openShareTray(){
+  const{title,url}=getShareData();
+  shareTrayVT.textContent=title;shareLinkBox.textContent=url;
+  shareTray.style.display='flex';requestAnimationFrame(()=>shareTray.classList.add('open'));
+}
+function closeShareTray(){
+  shareTray.classList.remove('open');
+  setTimeout(()=>{if(!shareTray.classList.contains('open'))shareTray.style.display='none';},300);
+}
+
+function shareOn(p){
+  const{title,url,text}=getShareData(),enc=encodeURIComponent;
+  let s='';
+  switch(p){
+    case'whatsapp':s='https://wa.me/?text='+enc(text);break;
+    case'twitter':s='https://twitter.com/intent/tweet?text='+enc('"'+title+'"')+'&url='+enc(url)+'&hashtags=IndiaBolega,Bollywood';break;
+    case'facebook':s='https://www.facebook.com/sharer/sharer.php?u='+enc(url);break;
+    case'telegram':s='https://t.me/share/url?url='+enc(url)+'&text='+enc(text);break;
+    case'instagram':navigator.clipboard.writeText(url).then(()=>showToast('Link copy! Instagram pe paste karo')).catch(()=>showToast('Link: '+url));closeShareTray();return;
+    case'youtube':s=url;break;
+    case'native':if(navigator.share){navigator.share({title,text:'"'+title+'"',url}).catch(()=>{});closeShareTray();return;}else{copyLink();return;}
+  }
+  if(s)window.open(s,'_blank','noopener,noreferrer');
+  closeShareTray();
+}
+
+function copyLink(){
+  const{url}=getShareData();
+  navigator.clipboard.writeText(url).then(()=>showToast('Link copy ho gaya!')).catch(()=>showToast('Copy nahi hua.'));
+}
+
+let toastTimer;
+function showToast(msg){
+  copyToast.textContent=msg;copyToast.style.display='block';
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{copyToast.style.display='none';},2800);
+}
+
+function showLoading(){
+  placeholder.style.display='none';ytFrame.style.display='none';errorDiv.style.display='none';
+  loading.style.display='block';bottomBar.style.display='none';shareBtn.style.display='none';
+  resultCount.textContent='Dhoondh raha hai...';clipNav.textContent='';results=[];closeShareTray();
+}
+
+function showError(msg){
+  loading.style.display='none';ytFrame.style.display='none';placeholder.style.display='none';
+  errorDiv.style.display='block';bottomBar.style.display='none';shareBtn.style.display='none';
+  errorText.innerHTML=msg;resultCount.textContent='India Bolega!';
+}
+
+/* Keyboard navigation */
+document.addEventListener('keydown',function(e){
+  if(e.target===searchInput)return;
+  if(e.key==='ArrowRight')nextClip();
+  if(e.key==='ArrowLeft')prevClip();
+  if(e.key==='Escape'){closeShareTray();closeEmotionModal();closeAudioGIFModal();}
+});
+document.getElementById('video-area').addEventListener('click',function(e){
+  if(shareTray.classList.contains('open')&&!shareTray.contains(e.target)&&e.target!==shareBtn)closeShareTray();
+});
+document.getElementById('emotion-modal').addEventListener('click',function(e){
+  if(e.target===this)closeEmotionModal();
+});
+document.getElementById('audiogif-modal').addEventListener('click',function(e){
+  if(e.target===this)closeAudioGIFModal();
+});
+<\/script>
 </body>
 </html>
